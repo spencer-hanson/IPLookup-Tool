@@ -29,8 +29,8 @@ class GeoIPLookup(object): #Static Class wrapper to get GeoLocational IP Lookup 
 				else:
 					data[result_tags[i]] = result;
 		except (urllib2.HTTPError, urllib2.URLError): #Catch errors for 404, 403 etc
-			#print "[Debug] Url Error!"
-			#print "[Debug] {}".format(sys.exec_info()[0]);
+			print "[Debug] Url Error for {}".format(ip_addr);
+			print "[Debug] {}".format(sys.exec_info()[0]);
 			pass;
 		finally:
 			return data;
