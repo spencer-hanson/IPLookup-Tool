@@ -29,6 +29,8 @@ class DataLoader(object):
 			print "Invalid regex!";
 		finally:
 			return results;
+	def getRawDataOf(self, key):
+		return self.data[key];
 	def getDataOf(self, key):#Get the given data of a key
 		return str(self.data[key]);#TODO make data more readable
 	def loadRDAP(self, key): #load data into a key
@@ -42,7 +44,7 @@ class DataLoader(object):
 					pass; #Data is already in this key for RDAP
 				else:
 					#Other data is in this key, must append
-					self.data[key] = {"RDAP": RDAPLookup.lookupRDAP(key)};
+					self.data[key]["RDAP"] = RDAPLookup.lookupRDAP(key);
 	def loadGeoIP(self, key): #load data into a key
 		if not self.hasData(): #If there's no data
 			print "No data to add a GeoLocation to!";	
@@ -54,7 +56,7 @@ class DataLoader(object):
 					pass; #Data is already here
 				else:
 					#Other data is in key, must append
-					self.data[key] = {"GEO": GeoIPLookup.lookupIP(key)};
+					self.data[key]["GEO"] = GeoIPLookup.lookupIP(key);
 
 	def hasData(self): #Return if there is data loaded or not
 		return self.data;

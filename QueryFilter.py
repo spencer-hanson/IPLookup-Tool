@@ -1,4 +1,7 @@
 from DataLoader import *
+from GeoIPLookup import *
+from RDAPLookup import *
+import objectpath
 import time
 
 class QueryFilter(object):
@@ -76,10 +79,33 @@ class QueryFilter(object):
 		print "Loading \'{}\'".format(filename);
 		print self.dataLoader.loadData(filename);
 
+	def __printGeoSummary(self, geo_data):
+		tags = GeoIPLookup.getResultTags();
+		for tag in tags:
+			try:
+				self.printN("{} - {}".format(tag, geo_data[tag]));
+			except:
+				self.printN("Can't display {}".format(tag));			
+	def __printRDAPSummary(self, rdap_data):
+#		tree_obj = objectpath.Tree(rdap_data);
+		self.printN("name - {}".format(rdap_data['name'].strip('\n')));
+		self.printN("handle - {}".format(rdap_data['handle'].strip('\n')));
+#		addr = tuple(tree_obj.execute('$..label'))[0].strip('\n');
+#		print "Address - {}".format(addr);
 	def commandSummary(self, params):
 		if not self.__validParams(params, 1):
 			return;
-		print "Meow";
+		query_index = self.__validVar(params[1]);
+		if query_index != -1:
+			for element in self.queries[query_index]:
+				raw_data = self.dataLoader.getRawDataOf(element);
+				if "GEO" in raw_data:
+					geo_data = raw_data['GEO'];
+					self.__printGeoSummary(geo_data);
+				if "RDAP" in raw_data:
+					rdap_data = raw_data['RDAP'];
+					self.__printRDAPSummary(rdap_data);
+				self.printN("---");
 	def commandRDAP(self, params): #Adds Registration data to a given key
 		if not self.__validParams(params, 1):
 			return;
