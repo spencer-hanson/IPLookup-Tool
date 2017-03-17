@@ -116,7 +116,7 @@ class PrintManager(object):#Manages printer output
 		self.x = 0;
 		self.y = 1;
 		self.currLine = 1;
-		self.max_lines = 40;
+		self.max_lines = 30;
 		self.max_chars = 80;
 		self.lines = [];
 		self.command = "";

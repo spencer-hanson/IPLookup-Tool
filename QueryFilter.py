@@ -75,6 +75,7 @@ class QueryFilter(object):
 				f = open(filename, "w");
 				for element in self.queries[query_index]:
 					f.write(str(self.dataLoader.getRawDataOf(element)) + "\n"); #Write raw to file
+				print "Successfully wrote {} lines to \'{}\'".format(len(self.queries[query_index]), filename);
 				return True;
 			except:
 				print "Error writing to file!";

@@ -21,5 +21,5 @@ if __name__ == "__main__":
 	queryFilter = QueryFilter(shutdown);
 	commandTerminal = CommandTerminal(terminal, queryFilter.runCommand);
 	commandTerminal.start()
-	time.sleep(2);
+	time.sleep(1);
 	queryFilter.printHeader();	
