@@ -7,7 +7,7 @@ class AddressReader(object):
 	def getAddresses(self):
 		raw_data = self.__readFile();
 		ip_data = [];
-		regex = re.compile("(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\\b");
+		regex = re.compile("(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b)");
 		for line in raw_data:
 			matches = regex.findall(line);
 			for match in matches:
