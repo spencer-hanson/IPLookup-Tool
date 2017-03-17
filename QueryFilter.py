@@ -1,8 +1,9 @@
 from DataLoader import *
 from GeoIPLookup import *
 from RDAPLookup import *
-import objectpath
-import time
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
+import timeit
 
 class QueryFilter(object):
 	def __init__(self, shutdown):
@@ -28,7 +29,7 @@ class QueryFilter(object):
 			else:
 				print "Command not found! Type help for more info.";
 	def getCommands(self):
-		commands = {"info": self.commandInfo, "load": self.commandLoad, "print": self.commandPrint, "rdap": self.commandRDAP, "geo": self.commandGeo, "data": self.commandData, "summary": self.commandSummary};
+		commands = {"info": self.commandInfo, "load": self.commandLoad, "print": self.commandPrint, "rdap": self.commandRDAP, "geo": self.commandGeo, "data": self.commandData, "summary": self.commandSummary, "search": self.commandSearch, "script":self.commandScript};
 		return commands;
 
 	def __validParams(self, params, numparams): #Check if parameters are valid
@@ -56,7 +57,19 @@ class QueryFilter(object):
 				print "Invalid var \'{}\'".format(var);
 				pass;
 		return query_index;
-		
+	def commandScript(self, params):
+		print "Meow!";	
+	def commandSearch(self, params):
+		if not self.__validParams(params, 2):
+			return;
+		query_index = self.__validVar(params[1]);
+		regex = params[2];
+		if query_index != -1:
+			for element in self.queries[query_index]:
+				results = self.dataLoader.findVal(regex, element); #Find a regex in a key
+				print "Results for {}".format(element);
+				for result in results:
+					self.printN(result);	
 	def commandData(self, params):
 		if not self.__validParams(params, 1):
 			return;
@@ -79,32 +92,18 @@ class QueryFilter(object):
 		print "Loading \'{}\'".format(filename);
 		print self.dataLoader.loadData(filename);
 
-	def __printGeoSummary(self, geo_data):
-		tags = GeoIPLookup.getResultTags();
-		for tag in tags:
-			try:
-				self.printN("{} - {}".format(tag, geo_data[tag]));
-			except:
-				self.printN("Can't display {}".format(tag));			
-	def __printRDAPSummary(self, rdap_data):
-#		tree_obj = objectpath.Tree(rdap_data);
-		self.printN("name - {}".format(rdap_data['name'].strip('\n')));
-		self.printN("handle - {}".format(rdap_data['handle'].strip('\n')));
-#		addr = tuple(tree_obj.execute('$..label'))[0].strip('\n');
-#		print "Address - {}".format(addr);
-	def commandSummary(self, params):
+	def commandSummary(self, params): #Get a summary of the given var's data
 		if not self.__validParams(params, 1):
 			return;
 		query_index = self.__validVar(params[1]);
 		if query_index != -1:
-			for element in self.queries[query_index]:
-				raw_data = self.dataLoader.getRawDataOf(element);
-				if "GEO" in raw_data:
-					geo_data = raw_data['GEO'];
-					self.__printGeoSummary(geo_data);
-				if "RDAP" in raw_data:
-					rdap_data = raw_data['RDAP'];
-					self.__printRDAPSummary(rdap_data);
+			for element in self.queries[query_index]: #For each matching key
+				raw_data = self.dataLoader.getSearchableData(element);
+				for key, value in raw_data.iteritems(): #Print each informational item
+					try:
+						self.printN("{} - {}".format(key, value));
+					except:
+						self.printN("{} - No Data".format(key));
 				self.printN("---");
 	def commandRDAP(self, params): #Adds Registration data to a given key
 		if not self.__validParams(params, 1):
@@ -112,18 +111,26 @@ class QueryFilter(object):
 		query_index = self.__validVar(params[1]);
 		if query_index != -1:
 			print "Loading in Registration Data for {} entries".format(len(self.queries[query_index]));
-			for element in self.queries[query_index]:
-				self.dataLoader.loadRDAP(element)
-			print "Done!";
+			pool = ThreadPool(4);
+			start_time = timeit.default_timer();
+			pool.map(self.dataLoader.loadRDAP, self.queries[query_index]);
+			time_taken = timeit.default_timer() - start_time;
+#			for element in self.queries[query_index]:
+#				self.dataLoader.loadRDAP(element)
+			print "Finished Loading in {} s".format(time_taken);
 	def commandGeo(self, params): #Adds geographic data into a given key
 		if not self.__validParams(params, 1):
 			return;
 		query_index = self.__validVar(params[1]);
 		if query_index != -1:
 			print "Loading in GeoLocation Data for {} entries".format(len(self.queries[query_index]));
-			for element in self.queries[query_index]:
-				self.dataLoader.loadGeoIP(element);
-			print "Done!";
+			pool = ThreadPool(4);
+			start_time = timeit.default_timer();
+			pool.map(self.dataLoader.loadGeoIP, self.queries[query_index]);
+			time_taken = timeit.default_timer() - start_time;
+#			for element in self.queries[query_index]:
+#				self.dataLoader.loadGeoIP(element);
+			print "Finished Loading in {} s".format(time_taken);
 	def commandInfo(self, params): #Get info about a given ip address
 		if not self.__validParams(params, 1):
 			return;
@@ -151,6 +158,10 @@ class QueryFilter(object):
 		self.printN("    gets geographic data for the given var");
 		self.printN("data $<var>");
 		self.printN("    prints the data of the given var");
+		self.printN("search $<var> <regex>");
+		self.printN("    searches the fields of data from a given var for a regex");
+		self.printN("script <filename>");
+		self.printN("    runs a script of the given filename");
 		self.printN("help");
 		self.printN("   Displays this help message");
 		self.printN("exit");

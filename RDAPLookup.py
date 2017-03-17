@@ -6,6 +6,9 @@ from pprint import pprint
 
 class RDAPLookup(object):
 	@staticmethod
+	def getInterestingKeys():
+		return ["name", "handle", "startAddress", "endAddress", "ipVersion"];
+	@staticmethod
 	def lookupRDAP(ip_addr): #Perform a lookup of a given ips Registration Data
 		query_url = "http://rdap.arin.net/bootstrap/ip/{}".format(ip_addr);
 		data = {};
