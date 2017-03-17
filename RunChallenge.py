@@ -6,7 +6,6 @@ from QueryFilter import *
 import sys
 import subprocess as sp
 from blessings import Terminal
-import objectpath
 import time
 
 commandTerminal = 0;
@@ -22,4 +21,5 @@ if __name__ == "__main__":
 	queryFilter = QueryFilter(shutdown);
 	commandTerminal = CommandTerminal(terminal, queryFilter.runCommand);
 	commandTerminal.start()
+	time.sleep(2);
 	queryFilter.printHeader();	
