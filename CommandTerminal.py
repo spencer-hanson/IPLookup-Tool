@@ -116,7 +116,7 @@ class PrintManager(object):#Manages printer output
 		self.x = 0;
 		self.y = 1;
 		self.currLine = 1;
-		self.max_lines = 20;
+		self.max_lines = 40;
 		self.max_chars = 80;
 		self.lines = [];
 		self.command = "";
@@ -193,23 +193,52 @@ class CommandTerminal(threading.Thread): #Basic Command terminal
 		self.printmgr = PrintManager(self.terminal, commandHook); #Hook into stdout
 		self.printer = PrintOutputter(self.printmgr); #Create new way to output
 		self.stopped = False;
+		self.listen = True;
 	def run(self):
 		self.printer.startManaging(); #Start managing output
 		while not self.stopped:#Continue as long as not stopped
-			self.printmgr.doUserType(readchar.readkey()); #Add the pressed key to the command
-			#Put what the user has typed on the screen with the caret in front of it
-			output = self.printmgr.doFormat("\\^noprefix$\\" + self.printmgr.caret+self.printmgr.command, x=0, y=self.printmgr.currLine)
-			#Move the caret to the position of the text
-			self.printer.getOrigOut().write(output+self.terminal.move(self.printmgr.currLine-1, len(self.printmgr.command)+1))
-	
+			if self.listen:
+				self.printmgr.doUserType(readchar.readkey()); #Add the pressed key to the command
+				#Put what the user has typed on the screen with the caret in front of it
+				output = self.printmgr.doFormat("\\^noprefix$\\" + self.printmgr.caret+self.printmgr.command, x=0, y=self.printmgr.currLine)
+				#Move the caret to the position of the text
+				self.printer.getOrigOut().write(output+self.terminal.move(self.printmgr.currLine-1, len(self.printmgr.command)+1))
+					
 		self.printer.getOrigOut().flush(); #Flush stdout
 		self.printer.stopManaging(); #Stop managing stdout
 		print "\n[System] Terminated.";
+	def setListening(self, listening):
+		self.listen = listening;
+	def getListening(self):
+		return self.listen;
 	def end(self):
 		self.stopped = True;
+	print_prefix = True;
+	@staticmethod
+	def noPrintPrefix():
+		CommandTerminal.print_prefix = False;
+	@staticmethod
+	def removePrefix(text):
+		if text.startswith("\\^"):
+			endpos = text.find("$\\"); #Find end of prefix
+			if endpos != -1:
+				text = text[pos+2:]; #Remove it
+		return text;
 	@staticmethod
 	def printThread(name, txt):
-		print "\\^name:{}$\\ {}".format(name, txt); #Print function for encoding output of a thread
+		if CommandTerminal.print_prefix:
+			print "\\^name:{}$\\ {}".format(name, txt); #Print function for encoding output of a thread
+		else:
+			print txt;
 	@staticmethod
 	def printSystem(txt):
-		print "\\^prefix:[System]$\\ {}".format(txt); #Print function for encoding the output of system
+		if CommandTerminal.print_prefix:
+			print "\\^prefix:[System]$\\ {}".format(txt); #Print function for encoding the output of system
+		else:
+			print txt;
+	@staticmethod
+	def printNoPrefix(txt):
+		if CommandTerminal.print_prefix:
+			print "\\^noprefix$\\ {}".format(txt);
+		else:
+			print txt;

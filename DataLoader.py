@@ -29,16 +29,17 @@ class DataLoader(object):
 			print "Invalid regex!";
 		finally:
 			return results;
+
 	def getSearchableData(self, key): #Get a dictionary of searchable values for a key
 		search_data = {};
-		if "GEO" in self.data[key]:
+		if "GEO" in self.data.get(key, "None"):
 			tags = GeoIPLookup.getResultTags();
 			for tag in tags:
-				search_data[tag] = self.data[key]['GEO'][tag].strip('\n');
-		if "RDAP" in self.data[key]:
+				search_data[tag] = self.data[key]['GEO'].get(tag, "None").strip('\n');
+		if "RDAP" in self.data.get(key, "None"):
 			tags = RDAPLookup.getInterestingKeys();
 			for tag in tags:
-				search_data[tag] = self.data[key]['RDAP'][tag].strip('\n');
+				search_data[tag] = self.data[key]['RDAP'].get(tag, "None").strip('\n');
 		return search_data;
 	def findVal(self, regex, key): #Find a given regex in a key
 		results = [];
@@ -53,9 +54,9 @@ class DataLoader(object):
 		finally:
 			return results;
 	def getRawDataOf(self, key):
-		return self.data[key];
+		return self.data.get(key, "None");
 	def getDataOf(self, key):#Get the given data of a key
-		return str(self.data[key]);#TODO make data more readable
+		return str(self.data.get(key, "None"));#TODO make data more readable
 	def loadRDAP(self, key): #load data into a key
 		if not self.hasData():
 			print "No data to add to RDAP to!";

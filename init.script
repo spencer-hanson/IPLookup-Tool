@@ -1,0 +1,4 @@
+load ips.txt
+find 43\..
+geo $0
+rdap $0

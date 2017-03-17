@@ -1,0 +1,15 @@
+load ips.txt
+find 14\.55\..
+geo $0
+rdap $0
+data $0
+search $0 .
+save $0 script_save.txt
+find 77\..
+geo $1
+rdap $1
+summary $1
+data $1
+search $1 KPN.
+save $1 script_save.txt
+exit
