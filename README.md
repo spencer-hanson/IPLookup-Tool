@@ -1,5 +1,7 @@
-# Python Challenge
+# IP Lookup Tool
+Get geographical and domain registration data about given ip addresses
 Python Challenge for Swimlane!
+
 
 <img src="media/demo.gif" />
 
